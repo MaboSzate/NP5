@@ -4,7 +4,7 @@ import os
 
 
 def read_etf_file(etf):
-    filename = os.path.join('input', etf + '.csv')
+    filename = etf + '.csv'
     df = pd.read_csv(filename, index_col=0)
     df.index = pd.to_datetime(df.index)
     return df
@@ -21,7 +21,12 @@ def get_etf_returns(etf_name,
         df['return'] = np.log(df[fieldname]/df['shifted'])
     if return_type=='simple':
         df['return'] = df[fieldname]/df['shifted']-1
-    return df[['return']]
+
+    # restrict df to result col
+    df = df[['return']]
+    #rename col
+    df.columns = [etf_name]
+    return df
 
 
 def get_total_return(etf, return_type='log'):
@@ -49,26 +54,23 @@ def get_price_return(etf, return_type='log'):
     return df_price
 
 
-
-def get_portfolio_return(d_pf, return_type='log'):
-    # steps
-    # - join returns
-    # - (drop na)
-    # - (step2 multiply by weights)
-    # - sum across etfs
-    # - give back result
-    # df_result = None
-    # for etf, weight in d_pf.items():
-    #     if df_result is None:
-    #         df_result = weight * get_total_return(etf, 'simple')
-    #     else:
-    #         df_result =
-    #     df_result = df_result.add(df_result, df_ret)
-    # return df_result
-    pass
+def get_portfolio_return(d_weights):
+    l_df = []
+    for etf, value in d_weights.items():
+        df_temp = get_total_return(etf, return_type='simple')
+        l_df.append(df_temp)
+    df_joined = pd.concat(l_df, axis=1)
+    df_joined.dropna(inplace=True)
+    df_weighted_returns = df_joined * pd.Series(d_weights)
+    s_portfolio_return = df_weighted_returns.sum(axis=1)
+    return pd.DataFrame(s_portfolio_return, columns=['pf'])
 
 
+def calc_historical_var(d_weights, l_conf_lvls):
+    df_pf = get_portfolio_return(d_weights)
+    l_conf_lvls = [1-x for x in l_conf_lvls]
+    return df_pf.quantile(l_conf_lvls)
 
 
-    pass
+pass
 

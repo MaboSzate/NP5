@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 import utils as u
 import matplotlib.pyplot as plt
 
@@ -25,10 +27,19 @@ def test_plot_total_return():
     df = u.get_total_return('VOO', 'log')
     df.plot()
     plt.show()
-# test_plot_total_return()
 
 
-def test_portfolio_return():
-    d_pf = {'VOO': 0.6, 'IEI': 0.4}
-    u.get_portfolio_return(d_pf, 'simple')
-test_portfolio_return()
+def demonstrate_historical_var(): # Value at Risk
+    d_weights = {'IEI': 0.1, 'VOO': 0.9}
+    df_pf = u.get_portfolio_return(d_weights)
+
+    # sort df
+    df_sorted = df_pf.sort_values(by='pf')
+    df_sorted.index = [x/len(df_sorted) for x in range(1, len(df_sorted) + 1)]
+    #print(df_sorted.head())
+    #print(df_sorted.tail())
+    print(df_sorted.quantile([0.1, 0.05, 0.025, 0.01]))  # ez is a var-t adja vissza, adott pontokra
+
+
+demonstrate_historical_var()
+pass
