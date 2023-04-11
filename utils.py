@@ -101,8 +101,8 @@ def calc_historical_var(pf_value, d_weights, l_conf_levels, last_day_of_interval
     df_ret = get_portfolio_return_btw_dates(d_weights, from_date, last_day_of_interval)
     l_quantiles = [1-x for x in l_conf_levels]
     df_result_ret = df_ret.quantile(l_quantiles)
-    df_result_ret.index = l_conf_levels
     df_result_amount = df_result_ret * pf_value
+    df_result_amount.index=[last_day_of_interval]
     return df_result_ret, df_result_amount
 
 
@@ -137,3 +137,28 @@ def calc_covar_var(pf_value, d_weights, l_conf_levels, last_day_of_interval, win
     df_result_ret.index = [last_day_of_interval]
     df_result_amount=df_result_ret * pf_value
     return df_result_ret, df_result_amount
+
+
+def calc_var_for_period(vartype,
+    pf_value, d_weights, l_conf_levels,
+    from_date, to_date,
+    window_in_days):
+    d_var_f = {
+        'hist': calc_historical_var,
+        'simple': calc_simple_var,
+        'covar': calc_covar_var
+    }
+    f_var = d_var_f[vartype]
+    business_days = pd.date_range(start=from_date, end=to_date, freq='B')
+    df_result = None
+    for last_day_of_interval in business_days:
+        df_temp_, df_temp_amount = f_var(
+            pf_value, d_weights, l_conf_levels,
+            last_day_of_interval, window_in_days)
+        if df_result is None:
+            df_result = df_temp_amount
+        else:
+            df_result = pd.concat(
+                [df_result, df_temp_amount],
+                axis=0)
+    return df_result

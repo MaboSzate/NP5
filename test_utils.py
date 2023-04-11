@@ -21,6 +21,17 @@ class Sajat(unittest.TestCase):
         self.assertAlmostEqual(df_var.values[0][0], -0.00429, 5)
         self.assertAlmostEqual(df_var.values[1][0], -0.01039, 5)
 
+    def test_calc_var_for_period(self):
+        d_weights = {'IEI': 0.6, 'VOO': 0.4}
+        pf_value = 100000
+        l_conf_levels = [0.95, 0.99]
+        from_date='2020-03-01'
+        to_date = '2020-04-01'
+        window_in_days = 250
+        df_var_amount = u.calc_var_for_period('simple',pf_value, d_weights, l_conf_levels, from_date,to_date, window_in_days)
+        pass
+
+
     def test_calc_simple_var(self):
         d_weights = {'IEI': 0.6, 'VOO': 0.4}
         pf_value = 100000
